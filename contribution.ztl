@@ -1,0 +1,18 @@
+class com.leandro.gp.copc.htable.Htablecopc extends Component {
+	/**
+	Used to get the Value selected on the component
+	
+	<returns>
+	The Value of selected
+	</returns>
+  	*/
+	String getMesSelecionado(){*
+		return this.mesSelecionado;
+	*}
+	String getContaContabil(){*
+		return this.contaContabil;
+	*}
+	void setMesSelecionado(String value){*
+		this.mesSelecionado = value;
+	*}
+}
