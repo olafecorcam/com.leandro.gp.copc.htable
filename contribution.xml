@@ -8,11 +8,38 @@
 		<jsInclude>res/js/component.js</jsInclude>
 		<jsInclude>res/js/numeral.min.js</jsInclude>
 
-		<property id="onchange" type="ScriptText" title="On Change"
+		<property id="tamanhoCol" type="String" title="Tamanho Colunas"
+			group="Events" visible="true" />
+
+		<property id="styleThis" type="String" title="Style this fucker"
+			group="Events" visible="false" />
+		<property id="totalReal" type="String" title="totalReal"
+			group="DataBinding" visible="false" />
+		<property id="totalOrca" type="String" title="totalOrca"
+			group="DataBinding" visible="false" />
+		<property id="totalDife" type="String" title="totalDife"
+			group="DataBinding" visible="false" />
+		<property id="totalVar" type="String" title="totalVar" group="DataBinding"
+			visible="false" />
+		<property id="totalRealAcu" type="String" title="totalRealAcu"
+			group="DataBinding" visible="false" />
+		<property id="totalOrcaAcu" type="String" title="totalOrcaAcu"
+			group="DataBinding" visible="false" />
+		<property id="totalDifeAcu" type="String" title="totalDifeAcu"
+			group="DataBinding" visible="false" />
+		<property id="totalVarAcu" type="String" title="totalVarAcu"
+			group="DataBinding" visible="false" />
+
+		<property id="rowSelecionada" type="ScriptText" title="On Row Select"
+			group="Events" />
+			
+		<property id="onpaint" type="ScriptText" title="On Paint"
 			group="Events" />
 
 		<property id="mesSelecionado" type="String" title="MesSelecionado"
 			group="Events" visible="false" />
+
+
 
 		<property id="contaContabil" type="String" title="contaContabil"
 			group="Events" visible="false" />
@@ -23,6 +50,8 @@
 		<initialization>
 			<defaultValue property="HEIGHT">25</defaultValue>
 			<defaultValue property="WIDTH">250</defaultValue>
+			<defaultValue property="tamanhoCol">170px;200px;200px;80px;80px;80px;80px;80px;80px;80px;80px
+			</defaultValue>
 
 
 

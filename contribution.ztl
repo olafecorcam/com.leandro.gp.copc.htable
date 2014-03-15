@@ -15,4 +15,31 @@ class com.leandro.gp.copc.htable.Htablecopc extends Component {
 	void setMesSelecionado(String value){*
 		this.mesSelecionado = value;
 	*}
+	void styleThis(String value){*
+		this.styleThis = value;
+	*}
+	String getTotalOrca(){*
+		return this.totalOrca;
+	*}
+	String getTotalDife(){*
+		return this.totalDife;
+	*}
+	String getTotalVar(){*
+		return this.totalVar;
+	*}
+	String getTotalRealAcu(){*
+		return this.totalRealAcu;
+	*}
+	String getTotalOrcaAcu(){*
+		return this.totalOrcaAcu;
+	*}
+	String getTotalDifeAcu(){*
+		return this.totalDifeAcu;
+	*}
+	String getTotalVarAcu(){*
+		return this.totalVarAcu;
+	*}
+	String getTotalReal(){*
+		return this.totalReal;
+	*}
 }

@@ -8,14 +8,76 @@ sap.ui.table.TreeTable
 							"name" : "string",
 							"data" : null,
 							"mesSelecionado" : null,
-							"contaContabil" : null
+							"contaContabil" : null,
+							"tamanhoCol" : null,
+							"totalReal" : null,
+							"totalOrca" : null,
+							"totalDife" : null,
+							"totalVar" : null,
+							"totalRealAcu" : null,
+							"totalOrcaAcu" : null,
+							"totalDifeAcu" : null,
+							"totalVarAcu" : null
 
 						}
 					},
+					setTotalReal : function(value) {
+						this.totalReal = value;
+
+					},
+					getTotalReal : function() {
+						return this.totalReal;
+					},
+					setTotalOrca : function(value) {
+						this.totalOrca = value;
+					},
+					getTotalOrca : function() {
+						return this.totalOrca;
+					},
+					setTotalDife : function(value) {
+						this.totalDife = value;
+					},
+					getTotalDife : function() {
+						return this.totalDife;
+					},
+					setTotalVar : function(value) {
+						this.totalVar = value;
+					},
+					getTotalVar : function() {
+						return this.totalVar;
+					},
+					setTotalRealAcu : function(value) {
+						this.totalRealAcu = value;
+					},
+					getTotalRealAcu : function() {
+						return this.totalRealAcu;
+					},
+					setTotalOrcaAcu : function(value) {
+						this.totalOrcaAcu = value;
+					},
+					getTotalOrcaAcu : function() {
+						return this.totalOrcaAcu;
+					},
+					setTotalDifeAcu : function(value) {
+						this.totalDifeAcu = value;
+					},
+					getTotalDifeAcu : function() {
+						return this.totalDifeAcu;
+					},
+					setTotalVarAcu : function(value) {
+						this.totalVarAcu = value;
+					},
+					getTotalVarAcu : function() {
+						return this.totalVarAcu;
+					},
+					setTamanhoCol : function(value) {
+						this.tamanhoCol = value;
+					},
+					getTamanhoCol : function() {
+						return this.tamanhoCol;
+					},
 					setMesSelecionado : function(value) {
 						this.mesSelecionado = parseInt(value);
-						// this.setData(this.data);
-
 					},
 					getMesSelecionado : function() {
 						return this.mesSelecionado;
@@ -28,14 +90,22 @@ sap.ui.table.TreeTable
 						return this.contaContabil;
 					},
 					setData : function(value) {
+
+						var that = this;
+						this.addEventDelegate( {
+							onAfterRendering : function(evt) {
+								that.styleThisBich();
+								that.fireDesignStudioEvent("onpaint");
+							}
+						});
 						this.data = value;
-						if(!this.isReload){
+						if (!this.isReload) {
 							this.isReload = true;
 							return;
-						}	
+						}
 						if (this.data) {
 							this.destroyColumns();
-
+							this.zeraTotais();
 							this.numCols = 0;
 							this.numRows = 0;
 							this.numColTuples = 0;
@@ -65,25 +135,14 @@ sap.ui.table.TreeTable
 							this.hierarquiza();
 
 							this.mountColunas();
+							this.arrumaTotais();
 
 							this
 									.setSelectionMode(sap.ui.table.SelectionMode.Single);
-							this.setAllowColumnReordering(true);
+							this.setAllowColumnReordering(false);
 							this.setExpandFirstLevel(false);
+							this.setVisibleRowCount(10);
 							this.result["text"] = "root";
-							this
-									.attachRowSelectionChange(function(oEvent) {
-										var iRowIndex = oEvent
-												.getParameter("rowIndex");
-										var oRowContext = oEvent
-												.getParameter("rowContext");
-										var bExpanded = oEvent
-												.getParameter("expanded");
-										alert("rowIndex: " + iRowIndex
-												+ " - rowContext: "
-												+ oRowContext.getPath()
-												+ " - expanded? " + bExpanded);
-									});
 							var oData = {
 								root : this.reorder()
 							};
@@ -92,9 +151,119 @@ sap.ui.table.TreeTable
 							oModel.setData(oData);
 							this.setModel(oModel);
 							this.bindRows("/root");
+							this.oModel = oModel;
+							this
+									.attachRowSelectionChange(function(oEvent) {
+										that.isReload = false;
+										var currentRowContext = oEvent
+												.getParameter("rowContext");
+										var contaContabil = that.oModel
+												.getProperty("contaContabil",
+														currentRowContext);
+
+										if (!contaContabil || contaContabil == "")
+											return;
+											
+										contaContabil = contaContabil.split("-")[0];
+										
+										that.setContaContabil(contaContabil);
+										that
+												.fireDesignStudioPropertiesChanged( [ "contaContabil" ]);
+
+										
+									});
+							// this is for formatting the rows
 
 						}
 
+					},
+					arrumaTotais : function() {
+						this.totalVar = this.totalReal / this.totalOrca;
+						this.totalVarAcu = this.totalRealAcu
+								/ this.totalOrcaAcu;
+
+						this.totalVar = numeral(
+								this.totalVar == null || isNaN(this.totalVar) ? 0
+										: this.totalVar).format(
+								this.totalVar < 0 ? "-0,000.00%" : "0,000.00%");
+
+						this.totalVarAcu = numeral(
+								this.totalVarAcu == null
+										|| isNaN(this.totalVarAcu) ? 0
+										: this.totalVarAcu).format(
+								this.totalVarAcu < 0 ? "-0,000.00%"
+										: "0,000.00%");
+						this.totalReal = numeral(
+								this.totalReal == null || isNaN(this.totalReal) ? 0
+										: this.totalReal).format(
+								this.totalReal < 0 ? "-0,000.00" : "0,000.00");
+						this.totalOrca = numeral(
+								this.totalOrca == null || isNaN(this.totalOrca) ? 0
+										: this.totalOrca).format(
+								this.totalOrca < 0 ? "-0,000.00" : "0,000.00");
+						this.totalDife = numeral(
+								this.totalDife == null || isNaN(this.totalDife) ? 0
+										: this.totalDife).format(
+								this.totalDife < 0 ? "-0,000.00" : "0,000.00");
+						this.totalRealAcu = numeral(
+								this.totalRealAcu == null
+										|| isNaN(this.totalRealAcu) ? 0
+										: this.totalRealAcu).format(
+								this.totalRealAcu < 0 ? "-0,000.00"
+										: "0,000.00");
+						this.totalOrcaAcu = numeral(
+								this.totalOrcaAcu == null
+										|| isNaN(this.totalOrcaAcu) ? 0
+										: this.totalOrcaAcu).format(
+								this.totalOrcaAcu < 0 ? "-0,000.00"
+										: "0,000.00");
+						this.totalDifeAcu = numeral(
+								this.totalDifeAcu == null
+										|| isNaN(this.totalDifeAcu) ? 0
+										: this.totalDifeAcu).format(
+								this.totalDifeAcu < 0 ? "-0,000.00"
+										: "0,000.00");
+						this.fireDesignStudioPropertiesChanged( [ "totalReal",
+								"totalOrca", "totalDife", "totalVar",
+								"totalRealAcu", "totalOrcaAcu", "totalDifeAcu",
+								"totalVarAcu" ]);
+
+					},
+					zeraTotais : function() {
+						this.totalVar = 0;
+						this.totalVarAcu = 0;
+						this.totalReal = 0;
+						this.totalOrca = 0;
+						this.totalDife = 0;
+						this.totalRealAcu = 0;
+						this.totalOrcaAcu = 0;
+						this.totalDifeAcu = 0;
+
+					},
+					styleThisBich : function() {
+
+						var elements = $('div.sapUiTableCell');
+						elements.each(function() {
+							$(this).children("span").each(function() {
+								var col = $(this).attr("data-sap-ui");
+								if (!col)
+									return;
+
+								col = col.split("-");
+								col = col[1].replace("col", "");
+								col = parseInt(col);
+
+								if (col >= 2) {
+									$(this).css("font-weight", "bold");
+									var texto = $(this).text();
+									if (texto.indexOf("-") > -1)
+										$(this).css("color", "red");
+									else
+										$(this).css("color", "black");
+								}
+
+							});
+						});
 					},
 					reorder : function() {
 						var dados = this.result[1];
@@ -181,37 +350,63 @@ sap.ui.table.TreeTable
 						// here is where the extra calculations are done, since
 						// every value goes through here
 						if (dado.level == 2)
-							dado["contaContabil"] = dado.key + "-" + dado.text;
+							dado["contaContabil"] = dado.key.substring(4, 100)
+									+ "-" + dado.text;
 
 						var montReal = this.value["Montante Real"];
 						var montPlan = this.value["Montante Planejado"];
+						if (!montPlan)
+							montPlan = 0;
+						if (!montReal)
+							montReal = 0;
+
 						var diferenca = montReal - montPlan;
-						var vari = (montReal / montPlan)-1;
+						var vari = montPlan == 0 ? 0
+								: (montReal / montPlan) - 1;
 
 						var montRealAcu = this.value["Montante RealAcu"];
 						var montPlanAcu = this.value["Montante PlanejadoAcu"];
+						if (!montRealAcu)
+							montRealAcu = 0;
+						if (!montPlanAcu)
+							montPlanAcu = 0;
 						var diferencaAcu = montReal - montPlan;
-						var variAcu = (montRealAcu / montPlanAcu)-1;
-						
+						var variAcu = montPlanAcu == 0 ? 0
+								: (montRealAcu / montPlanAcu) - 1;
+						if (dado.level == 1) {
+							this.totalReal = this.totalReal + montReal;
+							this.totalOrca = this.totalOrca + montPlan;
+							this.totalDife = this.totalDife + diferenca;
+							this.totalRealAcu = this.totalRealAcu + montRealAcu;
+							this.totalOrcaAcu = this.totalOrcaAcu + montPlanAcu;
+							this.totalDifeAcu = this.totalDifeAcu
+									+ diferencaAcu;
+						}
 						dado["vari"] = numeral(
-								vari == null || isNaN(vari) ? 0
-										: vari).format("0,000.00%");
+								vari == null || isNaN(vari) ? 0 : vari).format(
+								vari < 0 ? "-0,000.00%" : "0,000.00%");
 						dado["variAcu"] = numeral(
-								variAcu == null || isNaN(variAcu) ? 0
-										: variAcu).format("0,000.00%");
-						
+								variAcu == null || isNaN(variAcu) ? 0 : variAcu)
+								.format(
+										variAcu < 0 ? "-0,000.00%"
+												: "0,000.00%");
+
 						dado["diferenca"] = numeral(
 								diferenca == null || isNaN(diferenca) ? 0
-										: diferenca).format("0,000.00");
+										: diferenca).format(
+								diferenca < 0 ? "-0,000.00" : "0,000.00");
 						dado["diferencaAcu"] = numeral(
 								diferencaAcu == null || isNaN(diferencaAcu) ? 0
-										: diferencaAcu).format("0,000.00");
+										: diferencaAcu).format(
+								diferencaAcu < 0 ? "-0,000.00" : "0,000.00");
 						dado["Montante RealAcu"] = numeral(
 								montRealAcu == null || isNaN(montRealAcu) ? 0
-										: montRealAcu).format("0,000.00");
+										: montRealAcu).format(
+								montRealAcu < 0 ? "-0,000.00" : "0,000.00");
 						dado["Montante PlanejadoAcu"] = numeral(
 								montPlanAcu == null || isNaN(montPlanAcu) ? 0
-										: montPlanAcu).format("0,000.00");
+										: montPlanAcu).format(
+								montPlanAcu < 0 ? "-0,000.00" : "0,000.00");
 
 						this.value = new Object();
 						return dado;
@@ -317,37 +512,31 @@ sap.ui.table.TreeTable
 					},
 					mountColunas : function() {
 						var that = this;
+						var colSizes = this.getTamanhoCol();
+						if (colSizes)
+							colSizes = colSizes.split(";");
+
 						this.addColumn(new sap.ui.table.Column( {
 							label : new sap.ui.commons.Label( {
 								text : "Abertura",
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : "text",
-							width : "180px"
+							width : colSizes ? colSizes[0] : "170px"
 						}));
+						var contaContabil = new sap.ui.commons.TextView()
+								.bindProperty("text", "contaContabil");
+						contaContabil.setTextAlign(sap.ui.core.TextAlign.Left);
+						// texto.setDesign(sap.ui.commons.TextViewDesign.Bold);
 						this.addColumn(new sap.ui.table.Column( {
 							label : new sap.ui.commons.Label( {
-								text : "Conta Contabil",
+								text : "Conta Contábil",
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
-							template : new sap.ui.commons.Button( {
-								lite : true,
-								press : function(evt) {
-								
-									var btntxt = evt.getSource().getText();
-									if(btntxt == "")
-										return;
-									
-									var conta = btntxt.split("-")[0];
-									that.setContaContabil(conta);
-									that.fireDesignStudioPropertiesChanged( [
-											"contaContabil"]);
-									that.fireDesignStudioEvent("onchange");
-									that.isReload = false;
-								}
-							}).bindProperty("text", "contaContabil"),
-							width : "200px"
+							template : contaContabil,
+							width : colSizes ? colSizes[2] : "100px"
 						}));
+
 						var montReal = new sap.ui.commons.TextView()
 								.bindProperty("text", "Montante Real");
 						montReal.setTextAlign(sap.ui.core.TextAlign.Right);
@@ -358,7 +547,7 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : montReal,
-							width : "70px"
+							width : colSizes ? colSizes[3] : "80px"
 						}));
 
 						var montPlan = new sap.ui.commons.TextView()
@@ -371,11 +560,11 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : montPlan,
-							width : "70px"
+							width : colSizes ? colSizes[4] : "80px"
 						}));
 
-						var diferenca = new sap.ui.commons.TextView().bindProperty(
-								"text", "diferenca");
+						var diferenca = new sap.ui.commons.TextView()
+								.bindProperty("text", "diferenca");
 						diferenca.setTextAlign(sap.ui.core.TextAlign.Right);
 						// texto.setDesign(sap.ui.commons.TextViewDesign.Bold);
 						this.addColumn(new sap.ui.table.Column( {
@@ -384,9 +573,9 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : diferenca,
-							width : "70px"
+							width : colSizes ? colSizes[5] : "70px"
 						}));
-						
+
 						var vari = new sap.ui.commons.TextView().bindProperty(
 								"text", "vari");
 						vari.setTextAlign(sap.ui.core.TextAlign.Right);
@@ -397,7 +586,7 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : vari,
-							width : "60px"
+							width : colSizes ? colSizes[6] : "60px"
 						}));
 
 						var montPlanAcu = new sap.ui.commons.TextView()
@@ -410,16 +599,19 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : montPlanAcu,
-							width : "70px"
+							width : colSizes ? colSizes[7] : "80px"
 						}));
 						var montPlanAcu = new sap.ui.commons.TextView()
 								.bindProperty("text", "Montante PlanejadoAcu");
 						montPlanAcu.setTextAlign(sap.ui.core.TextAlign.Right);
 						// texto.setDesign(sap.ui.commons.TextViewDesign.Bold);
 						this.addColumn(new sap.ui.table.Column( {
-							label : "Orçado",
+							label : new sap.ui.commons.Label( {
+								text : "Orçado",
+								textAlign : sap.ui.core.TextAlign.Center
+							}),
 							template : montPlanAcu,
-							width : "70px"
+							width : colSizes ? colSizes[8] : "80px"
 						}));
 						var diferencaAcu = new sap.ui.commons.TextView()
 								.bindProperty("text", "diferencaAcu");
@@ -431,10 +623,10 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : diferencaAcu,
-							width : "70px"
+							width : colSizes ? colSizes[9] : "75px"
 						}));
-						var variAcu = new sap.ui.commons.TextView().bindProperty(
-								"text", "variAcu");
+						var variAcu = new sap.ui.commons.TextView()
+								.bindProperty("text", "variAcu");
 						variAcu.setTextAlign(sap.ui.core.TextAlign.Right);
 						// texto.setDesign(sap.ui.commons.TextViewDesign.Bold);
 						this.addColumn(new sap.ui.table.Column( {
@@ -443,13 +635,10 @@ sap.ui.table.TreeTable
 								textAlign : sap.ui.core.TextAlign.Center
 							}),
 							template : variAcu,
-							width : "60px"
+							width : colSizes ? colSizes[10] : "65px"
 						}));
 
-						for ( var i = 0; i < this.getColumns().length; i++) {
-							this.getColumns()[i]
-									.setHAlign(sap.ui.commons.layout.HAlign.Center);
-						}
+						
 
 					},
 					computeTableLayout : function() {
@@ -682,8 +871,9 @@ sap.ui.table.TreeTable
 					// (sdkui5_handler.js)
 					initDesignStudio : function() {
 						try {
-							//inside the button i set this to false,
-							//so taht the table does not reaload on it's click
+
+							// inside the button i set this to false,
+							// so taht the table does not reaload on it's click
 							this.isReload = true;
 							/*
 							 * var that = this; this.attachChange(function() {
@@ -693,8 +883,21 @@ sap.ui.table.TreeTable
 							 * "selectedValue", "selectedKey" ]);
 							 * that.fireDesignStudioEvent("onchange"); });
 							 */
+							var that = this;
+							// fix for the table not scrolling
+							if (!!sap.ui.Device.browser.webkit
+									&& !document.width) {
+								jQuery.sap.require("sap.ui.core.ScrollBar");
+								var fnOrg = sap.ui.core.ScrollBar.prototype.onAfterRendering;
+								sap.ui.core.ScrollBar.prototype.onAfterRendering = function() {
+									document.width = window.outerWidth;
+									fnOrg.apply(this, arguments);
+									document.width = undefined;
+								};
+							}
 						} catch (e) {
 							alert(e); // Aw snap
+
 						}
 
 					}
